@@ -110,13 +110,31 @@ form.addEventListener('keyup', function() {
 
 
 // kirm data ke tika tombol check ut di klik
-checkoutButton.addEventListener('click', function(e) {
+checkoutButton.addEventListener('click', async function(e) {
     e.preventDefault();
     const formData = new FormData(form);
     const data = new URLSearchParams(formData);
     const objData = Object.fromEntries(data);
-    const message = formatMessage(objData);
-    window.open('http://wa.me/62895329181905?text=' + encodeURIComponent(message));
+    
+    // const message = formatMessage(objData);
+    // window.open('http://wa.me/62895329181905?text=' + encodeURIComponent(message));
+
+    
+    // minta transction token menggunakan ajax / fecth
+    try{
+        const response = await fetch('php/placeOrder.php', { //Pemanggilan php
+           method: 'POST',
+           body: data,
+        });
+        const token = await response.text();
+        window.snap.pay(token);
+        
+    } catch (err) {
+        console.log(err.message);
+    }
+
+
+    // console.log(token);
 });
 
 // format pesan whatsap 
@@ -125,6 +143,8 @@ const formatMessage = (obj) => {
     Nama: ${obj.name}
     Email: ${obj.email}
     No HP: ${obj.phone}
+    alamat: ${obj.alamat}
+
 Data Pesanan
     ${JSON.parse(obj.items).map((item) => `${item.name} (${item.quantity} x ${rupiah(item.total)}) \n` )}
     TOTAL: ${rupiah(obj.total)}
